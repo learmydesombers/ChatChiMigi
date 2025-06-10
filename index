@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>چت چی می‌گی :)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0; padding: 0;
+      direction: rtl;
+      background-color: #fafafa;
+      color: #222;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .hidden {
+      display: none;
+    }
+    blockquote {
+      font-style: italic;
+      border-right: 5px solid #4a90e2;
+      padding-right: 15px;
+      margin-right: 0;
+      color: #444;
+      max-width: 600px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #4a90e2;
+      font-size: 28px;
+      margin-bottom: 15px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 600px;
+      margin-bottom: 30px;
+      line-height: 1.8;
+    }
+    ul li::before {
+      content: "✔ ";
+      color: green;
+    }
+    button {
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #357abd;
+    }
+    /* Chat page styles */
+    #chatPage {
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      height: 80vh;
+      box-sizing: border-box;
+    }
+    #chatPage.hidden {
+      display: none;
+    }
+    .chat-header {
+      text-align: center;
+      font-weight: bold;
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #4a90e2;
+    }
+    .chat-box {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-y: auto;
+      background: #fafafa;
+      margin-bottom: 10px;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .input-row input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .input-row button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      background-color: #4a90e2;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .input-row button:hover {
+      background-color: #357abd;
+    }
+  </style>
+</head>
+<body>
+
+<!-- صفحه مرامنامه و ورود -->
+<div id="welcomePage">
+  <blockquote>
+    ...كه حضور انسان آباداني است. <br />
+    <strong>— احمد شاملو</strong>
+  </blockquote>
+
+  <h1>مرام‌نامه «چت چی می‌گی :)»</h1>
+  <p>ما اینجا برای پر کردن لحظه‌های تنهایی ساخته شدیم. نه با هوش مصنوعی، بلکه با حضور واقعی انسان‌ها. اینجا جاییه برای گفت‌وگوی ناشناس، شنیده شدن و شنیدن.</p>
+
+  <ul>
+    <li>ما به حریم خصوصی احترام می‌گذاریم.</li>
+    <li>این پلتفرم برای مهربانی و هم‌دلی ساخته شده، نه قضاوت.</li>
+    <li>پیام‌های کاربران فقط برای پشتیبانی ثبت می‌شن و در اختیار هیچ نهاد یا شخص ثالثی قرار نمی‌گیرن.</li>
+    <li>هرگونه استفاده‌ی توهین‌آمیز یا غیرقانونی با پیگیری روبه‌رو خواهد شد.</li>
+    <li>هر زمان بخوای، می‌تونی گفت‌وگو رو ریست کنی و با فرد جدیدی صحبت کنی.</li>
+  </ul>
+
+  <button id="enterChatBtn">ورود به چت</button>
+</div>
+
+<!-- صفحه چت -->
+<div id="chatPage" class="hidden">
+  <div class="chat-header">گفت‌وگوی ناشناس</div>
+  <div class="chat-box" id="chat-box"></div>
+  <div class="input-row">
+    <input type="text" id="userInput" placeholder="حرفتو بنویس..." oninput="saveDraft()" />
+    <button onclick="sendMessage()">ارسال</button>
+  </div>
+  <button style="margin-top:10px; align-self:center;" onclick="restartChat()">🔁 شروع جدید</button>
+  <button style="margin-top:10px; align-self:center;" onclick="toggleTheme()">🌓 تغییر مود</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<script>
+  // اتصال به Firebase
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const chatBox = document.getElementById('chat-box');
+  const userInput = document.getElementById('userInput');
+
+  // نمایش صفحه چت و مخفی کردن مرامنامه بعد از کلیک ورود
+  document.getElementById('enterChatBtn').addEventListener('click', () => {
+    document.getElementById('welcomePage').classList.add('hidden');
+    document.getElementById('chatPage').classList.remove('hidden');
+    initChat();
+  });
+
+  // حالت تاریک و روشن
+  function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+  }
+
+  // ذخیره پیش‌نویس در localStorage
+  function saveDraft() {
+    localStorage.setItem('draftMessage', userInput.value);
+  }
+
+  // ریست گفتگو
+  function restartChat() {
+    chatBox.innerHTML = '';
+    localStorage.removeItem('chatHistory');
+    localStorage.removeItem('draftMessage');
+  }
+
+  // تولید شناسه یکتا برای نشست کاربر
+  let sessionId = localStorage.getItem('sessionId');
+  if (!sessionId) {
+    sessionId = 'session_' + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem('sessionId', sessionId);
+  }
+
+  // تابع اتصال دو کاربر به صورت رندوم
+  async function pairUser() {
+    const waitingRef = db.ref('waiting');
+    const snapshot = await waitingRef.once('value');
+    const waitingUsers = snapshot.val() || {};
+    for (const [key, val] of Object.entries(waitingUsers)) {
+      if (key !== sessionId) {
+        await db.ref(`pairs/${sessionId}`).set(key);
+        await db.ref(`pairs/${key}`).set(sessionId);
+        await db.ref(`waiting/${sessionId}`).remove();
+        await db.ref(`waiting/${key}`).remove();
+        return key;
+      }
+    }
+    await db.ref(`waiting/${sessionId}`).set(true);
+    return null;
+  }
+
+  let partnerId = null;
+
+  // مقداردهی اولیه چت
+  async function initChat() {
+    chatBox.innerHTML = '';
+    // بازیابی پیش‌نویس
+    const draft = localStorage.getItem('draftMessage');
+    if (draft) userInput.value = draft;
+
+    partnerId = await pairUser();
+
+    // گوش دادن به پیام‌های جدید
+    db.ref(`chats/${sessionId}`).on('child_added', (snapshot) => {
+      const data = snapshot.val();
+      if (data.from !== sessionId) {
+        const reply = document.createElement('div');
+        reply.textContent = data.message;
+        reply.style.margin = '10px 0';
+        reply.style.textAlign = 'left';
+        reply.style.color = '#888';
+        chatBox.appendChild(reply);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    });
+
+    // گرفتن IP کاربر
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => localStorage.setItem('ip', data.ip));
+  }
+
+  // ارسال پیام به طرف مقابل و ذخیره پیام
+  function sendMessage() {
+    const msgText = userInput.value.trim();
+    if (!msgText || !partnerId) return;
+
+    const timestamp = new Date().toISOString();
+    const messageData = {
+      from: sessionId,
+      to: partnerId,
+      message: msgText,
+      timestamp: timestamp,
+      ip: localStorage.getItem('ip') || 'unknown',
+      userAgent: navigator.userAgent
+    };
+
+    // ذخیره در پایگاه داده (دوطرفه)
+    db.ref(`chats/${sessionId}`).push(messageData);
+    db.ref(`chats/${partnerId}`).push(messageData);
+
+    // نمایش پیام ارسال شده در چت باکس
+    const msg = document.createElement('div');
+    msg.textContent = msgText;
+    msg.style.margin = '10px 0';
+    msg.style.textAlign = 'right';
+    msg.style.color = '#222';
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    userInput.value = '';
+    localStorage.removeItem('draftMessage');
+  }
+</script>
+</body>
+</html>
