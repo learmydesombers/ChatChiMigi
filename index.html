@@ -4,284 +4,298 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>چت چی می‌گی :)</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
+    :root {
+      --background-light: #f2f2f2;
+      --background-dark: #1e1e1e;
+      --text-light: #333;
+      --text-dark: #ddd;
+      --card-light: #fff;
+      --card-dark: #2e2e2e;
+    }
     body {
       font-family: sans-serif;
-      margin: 0; padding: 0;
-      direction: rtl;
-      background-color: #fafafa;
-      color: #222;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    .hidden {
-      display: none;
-    }
-    blockquote {
-      font-style: italic;
-      border-right: 5px solid #4a90e2;
-      padding-right: 15px;
-      margin-right: 0;
-      color: #444;
-      max-width: 600px;
-      margin-bottom: 20px;
-    }
-    h1 {
-      color: #4a90e2;
-      font-size: 28px;
-      margin-bottom: 15px;
-    }
-    ul {
-      list-style: none;
+      background-color: var(--background-light);
+      color: var(--text-light);
+      margin: 0;
       padding: 0;
-      max-width: 600px;
-      margin-bottom: 30px;
-      line-height: 1.8;
+      direction: rtl;
+      transition: all 0.3s ease;
     }
-    ul li::before {
-      content: "✔ ";
-      color: green;
+    .dark-mode {
+      background-color: var(--background-dark);
+      color: var(--text-dark);
     }
-    button {
-      background-color: #4a90e2;
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      font-size: 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #357abd;
-    }
-    /* Chat page styles */
-    #chatPage {
-      max-width: 600px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
+    header {
+      background-color: var(--card-light);
       padding: 20px;
-      background-color: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      height: 80vh;
-      box-sizing: border-box;
-    }
-    #chatPage.hidden {
-      display: none;
-    }
-    .chat-header {
       text-align: center;
-      font-weight: bold;
-      font-size: 24px;
-      margin-bottom: 15px;
-      color: #4a90e2;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background-color 0.3s;
+      position: relative;
+    }
+    .dark-mode header {
+      background-color: var(--card-dark);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      background: none;
+      border: 1px solid #aaa;
+      border-radius: 20px;
+      padding: 5px 10px;
+      transition: all 0.3s ease;
+    }
+    main {
+      padding: 40px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .chat-screen {
+      background-color: var(--card-light);
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: background-color 0.3s;
+    }
+    .dark-mode .chat-screen {
+      background-color: var(--card-dark);
     }
     .chat-box {
-      flex: 1;
       border: 1px solid #ccc;
       border-radius: 8px;
+      height: 300px;
+      overflow-y: scroll;
       padding: 10px;
-      overflow-y: auto;
       background: #fafafa;
-      margin-bottom: 10px;
+      text-align: right;
+    }
+    .dark-mode .chat-box {
+      background: #333;
+      color: var(--text-dark);
     }
     .input-row {
+      margin-top: 10px;
       display: flex;
-      gap: 10px;
     }
     .input-row input {
       flex: 1;
       padding: 10px;
-      border-radius: 8px;
       border: 1px solid #ccc;
-      font-size: 16px;
+      border-radius: 8px 0 0 8px;
     }
     .input-row button {
       padding: 10px 20px;
-      border-radius: 8px;
+      border: none;
       background-color: #4a90e2;
       color: white;
-      font-weight: bold;
+      border-radius: 0 8px 8px 0;
       cursor: pointer;
-      border: none;
-      transition: background-color 0.3s ease;
     }
-    .input-row button:hover {
-      background-color: #357abd;
+    .hidden {
+      display: none;
+    }
+    /* صفحه مرامنامه */
+    #welcomePage main {
+      margin-top: 60px;
+      padding: 20px;
+      background: var(--card-light);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      direction: rtl;
+      color: var(--text-light);
+    }
+    .dark-mode #welcomePage main {
+      background: var(--card-dark);
+      color: var(--text-dark);
+    }
+    #welcomePage button {
+      margin-top: 30px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #4a90e2;
+      color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-<!-- صفحه مرامنامه و ورود -->
-<div id="welcomePage">
-  <blockquote>
-    ...كه حضور انسان آباداني است. <br />
-    <strong>— احمد شاملو</strong>
-  </blockquote>
-
-  <h1>مرام‌نامه «چت چی می‌گی :)»</h1>
-  <p>ما اینجا برای پر کردن لحظه‌های تنهایی ساخته شدیم. نه با هوش مصنوعی، بلکه با حضور واقعی انسان‌ها. اینجا جاییه برای گفت‌وگوی ناشناس، شنیده شدن و شنیدن.</p>
-
-  <ul>
-    <li>ما به حریم خصوصی احترام می‌گذاریم.</li>
-    <li>این پلتفرم برای مهربانی و هم‌دلی ساخته شده، نه قضاوت.</li>
-    <li>پیام‌های کاربران فقط برای پشتیبانی ثبت می‌شن و در اختیار هیچ نهاد یا شخص ثالثی قرار نمی‌گیرن.</li>
-    <li>هرگونه استفاده‌ی توهین‌آمیز یا غیرقانونی با پیگیری روبه‌رو خواهد شد.</li>
-    <li>هر زمان بخوای، می‌تونی گفت‌وگو رو ریست کنی و با فرد جدیدی صحبت کنی.</li>
-  </ul>
-
-  <button id="enterChatBtn">ورود به چت</button>
-</div>
-
-<!-- صفحه چت -->
-<div id="chatPage" class="hidden">
-  <div class="chat-header">گفت‌وگوی ناشناس</div>
-  <div class="chat-box" id="chat-box"></div>
-  <div class="input-row">
-    <input type="text" id="userInput" placeholder="حرفتو بنویس..." oninput="saveDraft()" />
-    <button onclick="sendMessage()">ارسال</button>
+  <!-- صفحه مرامنامه -->
+  <div id="welcomePage">
+    <main>
+      <h2>مرامنامه</h2>
+      <p style="font-size:18px;line-height:2;">
+        این فضا برای گفت‌وگوی محترمانه، آزاد و ناشناس طراحی شده است.<br>
+        هیچ‌گونه سانسور یا محدودیتی وجود ندارد، اما احترام متقابل در اولویت است.<br>
+        لطفاً از ارسال محتوای توهین‌آمیز، نفرت‌پراکن، یا خلاف قوانین کشور خودداری فرمایید.<br><br>
+        <em>"... كه حضور انسان آباداني است."</em><br>
+        — احمد شاملو
+      </p>
+      <button onclick="enterChat()">ورود به گفت‌وگو</button>
+    </main>
   </div>
-  <button style="margin-top:10px; align-self:center;" onclick="restartChat()">🔁 شروع جدید</button>
-  <button style="margin-top:10px; align-self:center;" onclick="toggleTheme()">🌓 تغییر مود</button>
-</div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<script>
-  // اتصال به Firebase
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  <!-- صفحه چت -->
+  <div id="chatPage" class="hidden">
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 تغییر مود</button>
+    <header>
+      <h1>چت چی می‌گی :)</h1>
+    </header>
+    <main>
+      <div class="chat-screen">
+        <h3>گفت‌وگوی ناشناس</h3>
+        <div class="chat-box" id="chat-box"></div>
+        <div class="input-row">
+          <input type="text" id="userInput" placeholder="حرفتو بنویس..." oninput="saveDraft()" />
+          <button onclick="sendMessage()">ارسال</button>
+        </div>
+        <button class="restart-button" onclick="restartChat()">🔁 شروع جدید</button>
+      </div>
+    </main>
+  </div>
 
-  const chatBox = document.getElementById('chat-box');
-  const userInput = document.getElementById('userInput');
-
-  // نمایش صفحه چت و مخفی کردن مرامنامه بعد از کلیک ورود
-  document.getElementById('enterChatBtn').addEventListener('click', () => {
-    document.getElementById('welcomePage').classList.add('hidden');
-    document.getElementById('chatPage').classList.remove('hidden');
-    initChat();
-  });
-
-  // حالت تاریک و روشن
-  function toggleTheme() {
-    document.body.classList.toggle('dark-mode');
-  }
-
-  // ذخیره پیش‌نویس در localStorage
-  function saveDraft() {
-    localStorage.setItem('draftMessage', userInput.value);
-  }
-
-  // ریست گفتگو
-  function restartChat() {
-    chatBox.innerHTML = '';
-    localStorage.removeItem('chatHistory');
-    localStorage.removeItem('draftMessage');
-  }
-
-  // تولید شناسه یکتا برای نشست کاربر
-  let sessionId = localStorage.getItem('sessionId');
-  if (!sessionId) {
-    sessionId = 'session_' + Math.random().toString(36).substring(2, 10);
-    localStorage.setItem('sessionId', sessionId);
-  }
-
-  // تابع اتصال دو کاربر به صورت رندوم
-  async function pairUser() {
-    const waitingRef = db.ref('waiting');
-    const snapshot = await waitingRef.once('value');
-    const waitingUsers = snapshot.val() || {};
-    for (const [key, val] of Object.entries(waitingUsers)) {
-      if (key !== sessionId) {
-        await db.ref(`pairs/${sessionId}`).set(key);
-        await db.ref(`pairs/${key}`).set(sessionId);
-        await db.ref(`waiting/${sessionId}`).remove();
-        await db.ref(`waiting/${key}`).remove();
-        return key;
-      }
-    }
-    await db.ref(`waiting/${sessionId}`).set(true);
-    return null;
-  }
-
-  let partnerId = null;
-
-  // مقداردهی اولیه چت
-  async function initChat() {
-    chatBox.innerHTML = '';
-    // بازیابی پیش‌نویس
-    const draft = localStorage.getItem('draftMessage');
-    if (draft) userInput.value = draft;
-
-    partnerId = await pairUser();
-
-    // گوش دادن به پیام‌های جدید
-    db.ref(`chats/${sessionId}`).on('child_added', (snapshot) => {
-      const data = snapshot.val();
-      if (data.from !== sessionId) {
-        const reply = document.createElement('div');
-        reply.textContent = data.message;
-        reply.style.margin = '10px 0';
-        reply.style.textAlign = 'left';
-        reply.style.color = '#888';
-        chatBox.appendChild(reply);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }
-    });
-
-    // گرفتن IP کاربر
-    fetch('https://api.ipify.org?format=json')
-      .then(response => response.json())
-      .then(data => localStorage.setItem('ip', data.ip));
-  }
-
-  // ارسال پیام به طرف مقابل و ذخیره پیام
-  function sendMessage() {
-    const msgText = userInput.value.trim();
-    if (!msgText || !partnerId) return;
-
-    const timestamp = new Date().toISOString();
-    const messageData = {
-      from: sessionId,
-      to: partnerId,
-      message: msgText,
-      timestamp: timestamp,
-      ip: localStorage.getItem('ip') || 'unknown',
-      userAgent: navigator.userAgent
+  <script>
+    // -- تنظیمات Firebase (جایگزین با تنظیمات پروژه خودت) --
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
-    // ذخیره در پایگاه داده (دوطرفه)
-    db.ref(`chats/${sessionId}`).push(messageData);
-    db.ref(`chats/${partnerId}`).push(messageData);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // نمایش پیام ارسال شده در چت باکس
-    const msg = document.createElement('div');
-    msg.textContent = msgText;
-    msg.style.margin = '10px 0';
-    msg.style.textAlign = 'right';
-    msg.style.color = '#222';
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    // نمایش صفحه چت و مخفی کردن صفحه مرامنامه
+    function enterChat() {
+      document.getElementById('welcomePage').classList.add('hidden');
+      document.getElementById('chatPage').classList.remove('hidden');
+      initChat();
+    }
 
-    userInput.value = '';
-    localStorage.removeItem('draftMessage');
-  }
-</script>
+    // تغییر مود تاریک و روشن
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    // ذخیره پیام نیمه‌کاره در localStorage
+    function saveDraft() {
+      const input = document.getElementById('userInput');
+      localStorage.setItem('draftMessage', input.value);
+    }
+
+    // شروع گفتگوی جدید و پاک کردن داده‌ها
+    function restartChat() {
+      chatBox.innerHTML = '';
+      localStorage.removeItem('chatHistory');
+      localStorage.removeItem('draftMessage');
+      // پاک کردن چت‌های firebase
+      if(sessionId){
+        db.ref(`chats/${sessionId}`).remove();
+      }
+      pairUser();
+    }
+
+    let sessionId = localStorage.getItem('sessionId');
+    if (!sessionId) {
+      sessionId = 'session_' + Math.random().toString(36).substring(2, 10);
+      localStorage.setItem('sessionId', sessionId);
+    }
+
+    const chatBox = document.getElementById('chat-box');
+    let partnerId = null;
+
+    // جفت کردن کاربر با یک نفر منتظر دیگر
+    async function pairUser() {
+      partnerId = null;
+      const waitingRef = db.ref('waiting');
+      const snapshot = await waitingRef.once('value');
+      const waitingUsers = snapshot.val() || {};
+
+      for (const [key, val] of Object.entries(waitingUsers)) {
+        if (key !== sessionId) {
+          // جفت کردن دو نفر
+          db.ref(`pairs/${sessionId}`).set(key);
+          db.ref(`pairs/${key}`).set(sessionId);
+          db.ref(`waiting/${sessionId}`).remove();
+          db.ref(`waiting/${key}`).remove();
+          partnerId = key;
+          return;
+        }
+      }
+      // اگر کسی منتظر نبود، خودت را منتظر کن
+      db.ref(`waiting/${sessionId}`).set(true);
+    }
+
+    // ارسال پیام به firebase
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const msgText = input.value.trim();
+      if (!msgText || !partnerId) return alert('منتظر اتصال به طرف مقابل...');
+      const timestamp = new Date().toISOString();
+      const messageData = {
+        from: sessionId,
+        to: partnerId,
+        message: msgText,
+        timestamp: timestamp,
+        ip: localStorage.getItem('ip') || 'unknown',
+        userAgent: navigator.userAgent
+      };
+
+      // ذخیره پیام برای هر دو طرف
+      db.ref(`chats/${sessionId}`).push(messageData);
+      db.ref(`chats/${partnerId}`).push(messageData);
+
+      // نمایش پیام فرستاده شده در صفحه
+      const msg = document.createElement('div');
+      msg.textContent = msgText;
+      msg.style.margin = '10px 0';
+      msg.style.textAlign = 'right';
+      chatBox.appendChild(msg);
+      input.value = '';
+      localStorage.removeItem('draftMessage');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // دریافت پیام‌های جدید firebase و نمایش آنها
+    function initChat() {
+      // بارگذاری پیش‌نویس اگر بود
+      const draft = localStorage.getItem('draftMessage');
+      if (draft) document.getElementById('userInput').value = draft;
+
+      pairUser();
+
+      db.ref(`chats/${sessionId}`).on('child_added', snapshot => {
+        const data = snapshot.val();
+        if(data.from !== sessionId) {
+          const msg = document.createElement('div');
+          msg.textContent = data.message;
+          msg.style.margin = '10px 0';
+          msg.style.textAlign = 'left';
+          chatBox.appendChild(msg);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+      });
+    }
+  </script>
+
 </body>
 </html>
